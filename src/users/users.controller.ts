@@ -11,6 +11,11 @@ import {UserInfo} from './UserInfo';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get()
+  getHello(): string {
+    return process.env.DATABASE_HOST
+  }
+
   @Post()
   async createUser(@Body() dto: CreateUserDto) : Promise<void> {
 
