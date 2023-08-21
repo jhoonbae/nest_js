@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, HttpCode, Redirect, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, HttpCode, Redirect, Query, ParseIntPipe, HttpStatus } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -41,11 +41,12 @@ export class UsersController {
   }
 
   @Get('/:id')
-  async getUserInfo(@Param('id') userId : string) : Promise<UserInfo> {
+  async getUserInfo(@Param('id', new ParseIntPipe({errorHttpStatusCode : HttpStatus.NOT_ACCEPTABLE})) userId : string) : Promise<UserInfo> {
 
     console.log('userId :>> ', userId);
     return await this.usersService.getUserInfo(userId)
   }
+
 
   // @Get()
   // findAll() {
