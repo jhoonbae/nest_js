@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import emailConfig from './config/emailConfig';
 import { validationSchema } from './config/validationSchema';
 import { UsersModule } from './users/users.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -13,6 +14,19 @@ import { UsersModule } from './users/users.module';
       isGlobal: true,
       validationSchema,
     }),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.DATABASE_HOST,
+      port: 3307,
+      username: process.env.DATABASE_USERNAME, 
+      password: process.env.DATABASE_PASSWORD, 
+      database: 'test',
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: false,
+      migrationsRun : false,
+      migrations: [__dirname + '/**/migrations/*.js'],
+      migrationsTableName: 'migrations'
+    })
   ],
   controllers: [],
   providers: [],
