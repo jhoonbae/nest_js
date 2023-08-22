@@ -5,6 +5,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import {UserLoginDTO} from './dto/user-login.dto';
 import {VerifyEmailDTO} from './dto/verify-email.dto';
 import {UserInfo} from './UserInfo';
+import { ValidationPipe } from 'src/validation.pipe';
 
 
 @Controller('users')
@@ -17,7 +18,7 @@ export class UsersController {
   }
 
   @Post()
-  async createUser(@Body() dto: CreateUserDto) : Promise<void> {
+  async createUser(@Body(ValidationPipe) dto: CreateUserDto) : Promise<void> {
 
     console.log('dto :>> ', dto);
     const {email, name, password} = dto
@@ -41,7 +42,9 @@ export class UsersController {
   }
 
   @Get('/:id')
-  async getUserInfo(@Param('id', new ParseIntPipe({errorHttpStatusCode : HttpStatus.NOT_ACCEPTABLE})) userId : string) : Promise<UserInfo> {
+  async getUserInfo(
+    @Param('id') userId : string,
+    ) : Promise<UserInfo> {
 
     console.log('userId :>> ', userId);
     return await this.usersService.getUserInfo(userId)
