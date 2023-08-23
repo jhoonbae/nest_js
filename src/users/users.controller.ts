@@ -1,83 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, HttpCode, Redirect, Query, ParseIntPipe, HttpStatus } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { Body, Controller, Get, Param, Post, Query, Headers, UseGuards } from '@nestjs/common';
+import { AuthGuard } from 'src/auth.guard';
+import { AuthService } from 'src/auth/auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import {UserLoginDTO} from './dto/user-login.dto';
-import {VerifyEmailDTO} from './dto/verify-email.dto';
-import {UserInfo} from './UserInfo';
-import { ValidationPipe } from 'src/validation.pipe';
-
+import { UserLoginDto } from './dto/user-login.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { UserInfo } from './UserInfo';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
-
-  @Get()
-  getHello(): string {
-    return process.env.DATABASE_HOST
-  }
+  constructor(
+    private usersService: UsersService,
+    private authService: AuthService,
+  ) { }
 
   @Post()
-  async createUser(@Body(ValidationPipe) dto: CreateUserDto) : Promise<void> {
-
-    console.log('dto :>> ', dto);
-    const {email, name, password} = dto
-
-    await this.usersService.createUser(name, email, password)
+  async createUser(@Body() dto: CreateUserDto): Promise<void> {
+    const { name, email, password } = dto;
+    await this.usersService.createUser(name, email, password);
   }
 
   @Post('/email-verify')
-  async verifyEmail(@Query() dto : VerifyEmailDTO) : Promise<string> {
-    console.log('dto :>> ', dto);
+  async verifyEmail(@Query() dto: VerifyEmailDto): Promise<string> {
+    const { signupVerifyToken } = dto;
 
-    const {signupVerifyToken} = dto
-    return await this.usersService.verifyEmail(signupVerifyToken)
+    return await this.usersService.verifyEmail(signupVerifyToken);
   }
 
   @Post('/login')
-  async login(@Body() dto : UserLoginDTO) : Promise<string> {
-    console.log('dto :>> ', dto);
-    const {email, password} = dto
-    return await this.usersService.login(email, password)
+  async login(@Body() dto: UserLoginDto): Promise<string> {
+    const { email, password } = dto;
+
+    return await this.usersService.login(email, password);
   }
-
-  @Get('/:id')
-  async getUserInfo(
-    @Param('id') userId : string,
-    ) : Promise<UserInfo> {
-
-    console.log('userId :>> ', userId);
-    return await this.usersService.getUserInfo(userId)
-  }
-
-
-  // @Get()
-  // findAll() {
-  //   return this.usersService.findAll();
-  // }
 
   // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   console.log("Get:id 요청 ")
-  //   if(+id < 1) throw new BadRequestException("id 는 0보다 큰 값이여야 합니다.")
-  //   return this.usersService.findOne(+id);
+  // async getUserInfo(@Headers() headers: any, @Param('id') userId: string): Promise<UserInfo> {
+  //   const jwtString = headers.authorization.split('Bearer ')[1];
+
+  //   this.authService.verify(jwtString);
+
+  //   return this.usersService.getUserInfo(userId);
   // }
 
-  // @HttpCode(202)
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-
-  //   return this.usersService.update(+id, updateUserDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.usersService.remove(+id);
-  // }
-
-  // @Get('redirect/docs')
-  // @Redirect('https://docs.nestjs.com', 302)
-  // getDocs(@Query('version') version) {
-  //   if(version && version === '5') return { url : 'https://docs.nestjs.com/v5/'}
-  // }
+  @UseGuards(AuthGuard)
+  @Get(':id')
+  async getUserInfo(@Headers() headers: any, @Param('id') userId: string): Promise<UserInfo> {
+    return this.usersService.getUserInfo(userId);
+  }
 }
