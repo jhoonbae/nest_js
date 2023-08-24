@@ -5,6 +5,8 @@ import authConfig from './config/authConfig';
 import emailConfig from './config/emailConfig';
 import { validationSchema } from './config/validationSchema';
 import { UsersModule } from './users/users.module';
+import * as winston from 'winston';
+import {utilities as nestWinstonModuleUtils, WinstonModule} from 'nest-winston';
 
 @Module({
   imports: [
@@ -27,6 +29,17 @@ import { UsersModule } from './users/users.module';
       migrations: [__dirname + '/**/migrations/*.js'],
       migrationsTableName: 'migrations',
     }),
+    WinstonModule.forRoot({
+      transports : [
+        new winston.transports.Console({
+          level : process.env.NODE_ENV === 'production' ? 'info' : 'silly',
+          format : winston.format.combine(
+            winston.format.timestamp(),
+            nestWinstonModuleUtils.format.nestLike('MyApp', {prettyPrint : true})
+          )
+        })
+      ]
+    })
   ],
   controllers: [],
   providers: [],
